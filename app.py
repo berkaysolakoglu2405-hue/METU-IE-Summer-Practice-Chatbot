@@ -26,15 +26,12 @@ else:
     st.stop()
 
 # ══════════════════════════════════════════════════════════════
-#  CSS (Gece ve Gündüz Modu Uyumlu)
+#  CSS (Orijinal Bordo Tema)
 # ══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
-html, body, [data-testid="stAppViewContainer"] { 
-    font-family: 'Inter', sans-serif; 
-}
+html, body, [data-testid="stAppViewContainer"] { font-family: 'Inter', sans-serif; background-color: #f8f5f0; }
 [data-testid="stSidebar"] { background: linear-gradient(180deg, #7a0000 0%, #4a0000 100%); }
 [data-testid="stSidebar"] * { color: #fff !important; }
 [data-testid="stSidebar"] .stButton > button { background: rgba(255,255,255,0.12) !important; color: #fff !important; border: 1px solid rgba(255,255,255,0.25) !important; border-radius: 8px !important; text-align: left !important; width: 100% !important; margin-bottom: 4px !important; padding: 6px 10px !important; }
@@ -42,16 +39,7 @@ html, body, [data-testid="stAppViewContainer"] {
 .main-header { background: linear-gradient(90deg, #8B0000, #CC0000); padding: 1.4rem 2rem; border-radius: 14px; margin-bottom: 1.5rem; box-shadow: 0 4px 16px rgba(139,0,0,0.25); }
 .main-header h2 { color: white; margin: 0; font-size: 1.6rem; font-weight: 600; }
 .main-header p  { color: #ffcccc; margin: 0.3rem 0 0 0; font-size: 0.9rem; }
-
-.footer { 
-    text-align: center; 
-    font-size: 0.75rem; 
-    color: var(--text-color); 
-    opacity: 0.6; 
-    margin-top: 2rem; 
-    padding-top: 1rem; 
-    border-top: 1px solid rgba(128,128,128,0.2); 
-}
+.footer { text-align: center; font-size: 0.75rem; color: #aaa; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e0d8d0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -147,30 +135,26 @@ def build_vector_store():
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  KİMLİĞİ GİZLENMİŞ, DETAYLI VE YARDIMSEVER MELEZ BEYİN
+#  KİMLİĞİ GİZLENMİŞ, BARAJI KALDIRILMIŞ MELEZ BEYİN (KOTA KORUMALI)
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
     
-    results = vector_store.similarity_search(user_question, k=5)
-    
-    context_list = []
-    for i, doc in enumerate(results):
-        context_list.append(f"--- KAYNAK {i+1} ---\n{doc.page_content}")
-        
-    context = "\n\n".join(context_list)
+    # En iyi 3 eşleşmeyi koşulsuz şartsız çekiyoruz.
+    results = vector_store.similarity_search(user_question, k=3)
+    context = "\n\n---\n\n".join([doc.metadata["answer"] for doc in results])
 
     try:
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         
         if not available_models:
-            return "⚠️ HATA: API Key şu an hiçbir modele erişemiyor."
+            return "⚠️ HATA: API Key yetkisiz veya modellere erişilemiyor."
             
-        # Limit sorunu yaşamamak için 2.0 ve 2.5 modellerinden kaçıyoruz
+        # SADECE BU KISMI DEĞİŞTİRDİM (2.0 ve 2.5 yasak)
         safe_models = [m for m in available_models if "2.0" not in m and "2.5" not in m and "vision" not in m]
         
         if not safe_models:
-            return f"⚠️ HATA: Geçerli model bulunamadı."
+            return "⚠️ HATA: Geçerli bedava model bulunamadı."
             
         chosen_model = safe_models[0]
         for m in safe_models:
@@ -182,21 +166,19 @@ def ask_gemini(user_question: str) -> str:
         model = genai.GenerativeModel(clean_model_name)
         
     except Exception as e:
-        return f"⚠️ Model bağlantı hatası: {e}"
+        return f"API bağlantı hatası: {e}"
     
-    # 🚨 PROMPT GÜNCELLENDİ: ARTIK ÇOK DAHA DETAYLI, AÇIKLAYICI VE SAMİMİ 🚨
     prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
     
     CRITICAL IDENTITY RULE: 
-    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a highly knowledgeable, friendly, and helpful human assistant dedicated to METU IE students.
+    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a helpful human-like assistant dedicated to METU IE students. If someone asks "who are you" or "are you an AI", purely introduce yourself as the METU IE Summer Practice Assistant.
     
-    Here are the top 5 retrieved records from the official database:
+    Here is the retrieved information from the official internship database:
     {context}
     
     Task Guidelines:
-    1. Base your factual information STRICTLY on the retrieved records above. Do not invent fake university rules.
-    2. However, provide a RICH, DETAILED, and CONVERSATIONAL response. Elaborate naturally on the facts to make your answer comprehensive, supportive, and easy to understand. Do not just give a dry, robotic answer.
-    3. If the user asks something completely unrelated to internships, answer perfectly using your general knowledge in a detailed way, but ALWAYS STAY IN CHARACTER.
+    1. INTERNSHIP QUESTIONS: If the user asks about METU IE Internships, answer accurately using ONLY the information provided in the context above.
+    2. OUT OF SCOPE QUESTIONS: If the user asks something completely unrelated to internships (e.g., math, coding, history, general chat), answer perfectly using your general knowledge, but ALWAYS STAY IN CHARACTER as the METU IE Assistant. Do not break character.
 
     User Question: {user_question}
     Answer:"""
@@ -274,18 +256,15 @@ st.markdown(
 )
 
 # ══════════════════════════════════════════════════════════════
-#  AUTO-SCROLL (AŞAĞI IŞINLANMA) HİLESİ V2 (Gecikmeli)
+#  AUTO-SCROLL (AŞAĞI IŞINLANMA) HİLESİ
 # ══════════════════════════════════════════════════════════════
 components.html(
-    """
+    f"""
     <script>
-        function forceScroll() {
-            var parentDoc = window.parent.document;
-            var appContainer = parentDoc.querySelector('.main') || parentDoc.documentElement;
-            appContainer.scrollTo({ top: parentDoc.body.scrollHeight, behavior: 'smooth' });
-        }
-        setTimeout(forceScroll, 100);
-        setTimeout(forceScroll, 600);
+        var chatHistory = window.parent.document.querySelector('.main');
+        if (chatHistory) {{
+            chatHistory.scrollTo({{ top: chatHistory.scrollHeight, behavior: 'smooth' }});
+        }}
     </script>
     """,
     height=0

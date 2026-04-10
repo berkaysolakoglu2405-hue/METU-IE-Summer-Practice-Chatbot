@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ══════════════════════════════════════════════════════════════
-#  API KEY SETUP (Gemini için - Sır olarak gizli)
+#  API KEY SETUP (Gemini için - Secrets'tan Çekiyor)
 # ══════════════════════════════════════════════════════════════
 if "GOOGLE_API_KEY" in st.secrets:
     api_key = st.secrets["GOOGLE_API_KEY"]
@@ -152,14 +152,13 @@ QA_DATABASE = [
 ]
 
 # ══════════════════════════════════════════════════════════════
-#  YEREL ARAMA MOTORU (404 Hatası Olmaz, Türkçe/İngilizce anlar)
+#  YEREL ARAMA MOTORU (Google'a muhtaç değil, 404 vermez)
 # ══════════════════════════════════════════════════════════════
 @st.cache_resource(show_spinner="Loading knowledge base… (~30 seconds on first load)")
 def build_vector_store():
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     docs = []
     for i, qa in enumerate(QA_DATABASE):
-        # Soruları ve cevapları beraber tarasın ki daha zeki bulsun
         doc = Document(
             page_content=qa["question"] + " " + qa["answer"],
             metadata={"answer": qa["answer"], "idx": i}
@@ -168,18 +167,20 @@ def build_vector_store():
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  MELEZ BEYİN (Gemini + Local RAG) Out of Scope Desteği
+#  MELEZ BEYİN (Gemini PRO + Local RAG)
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
     results = vector_store.similarity_search_with_score(user_question, k=2)
     
     context = ""
-    # Soru stajla biraz bile ilgiliyse bilgiyi çekiyoruz (Baraj 1.8)
+    # Soru stajla alakalıysa bilgiyi çekiyoruz
     if results and results[0][1] < 1.8: 
         context = "\n\n".join([doc.metadata["answer"] for doc, score in results])
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    # KESIN COZUM: 1.5 flash yerine her sunucuda calisan gemini-pro kullaniyoruz
+    model = genai.GenerativeModel("gemini-pro")
+    
     prompt = f"""You are an intelligent, friendly AI assistant for METU Industrial Engineering students.
 
     Here is the official internship context (if any):
@@ -207,7 +208,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
-#  UI — SIDEBAR (Senin Orijinal Menün)
+#  UI — SIDEBAR
 # ══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("## 🎓 METU IE\nSummer Practice")
@@ -277,7 +278,7 @@ if user_input:
 
 st.markdown(
     '<div class="footer">'
-    'METU IE Summer Practice Assistant · Powered by Gemini · '
+    'METU IE Summer Practice Assistant · Powered by Gemini Pro · '
     'Source: <a href="https://sp-ie.metu.edu.tr/en" target="_blank">sp-ie.metu.edu.tr</a>'
     '</div>',
     unsafe_allow_html=True,

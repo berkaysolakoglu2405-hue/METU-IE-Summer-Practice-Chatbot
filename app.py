@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 import google.generativeai as genai
 from langchain_community.vectorstores import FAISS
@@ -162,11 +163,8 @@ def ask_gemini(user_question: str) -> str:
 
     clean_model_name = chosen_model.replace("models/", "")
     
-    # Toast mesajını da kaldırdım ki altta 'gemini kullanılıyor' yazmasın, tam gizlilik olsun!
-    
     model = genai.GenerativeModel(clean_model_name)
     
-    # === GÜNCELLENMİŞ, KESİN KİMLİK PROMPTU ===
     prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
     
     CRITICAL IDENTITY RULE: 
@@ -188,7 +186,12 @@ def ask_gemini(user_question: str) -> str:
 # ══════════════════════════════════════════════════════════════
 #  UI
 # ══════════════════════════════════════════════════════════════
-st.markdown("""<div class="main-header"><h2>🎓 METU IE Summer Practice Chatbot</h2><p>IE 300 &amp; IE 400 · Out of Scope Supported</p></div>""", unsafe_allow_html=True)
+st.markdown("""
+<div class="main-header">
+    <h2>🎓 METU IE Summer Practice Chatbot</h2>
+    <p>IE 300 &amp; IE 400 · Applications · Documents · Deadlines · Process</p>
+</div>
+""", unsafe_allow_html=True)
 
 with st.sidebar:
     st.markdown("## 🎓 METU IE\nSummer Practice")
@@ -240,3 +243,26 @@ if user_input:
                 answer = "An error occurred."
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
+
+st.markdown(
+    '<div class="footer">'
+    'METU IE Summer Practice Assistant · '
+    'Source: <a href="https://sp-ie.metu.edu.tr/en" target="_blank">sp-ie.metu.edu.tr</a>'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+# ══════════════════════════════════════════════════════════════
+#  AUTO-SCROLL (AŞAĞI IŞINLANMA) HİLESİ
+# ══════════════════════════════════════════════════════════════
+components.html(
+    f"""
+    <script>
+        var chatHistory = window.parent.document.querySelector('.main');
+        if (chatHistory) {{
+            chatHistory.scrollTo({{ top: chatHistory.scrollHeight, behavior: 'smooth' }});
+        }}
+    </script>
+    """,
+    height=0
+)

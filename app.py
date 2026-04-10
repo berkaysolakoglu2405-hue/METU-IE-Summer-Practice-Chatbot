@@ -147,46 +147,38 @@ def build_vector_store():
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  KİMLİĞİ GİZLENMİŞ, BARAJI KALDIRILMIŞ MELEZ BEYİN
+#  KİMLİĞİ GİZLENMİŞ, ÜCRETSİZ LİMİTLERE UYGUN MELEZ BEYİN
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
     
-    # En iyi 3 eşleşmeyi koşulsuz şartsız çekiyoruz.
-    results = vector_store.similarity_search(user_question, k=3)
-    context = "\n\n---\n\n".join([doc.metadata["answer"] for doc in results])
-
-    available_models = []
-    try:
-        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    except Exception as e:
-        return f"API bağlantı hatası: {e}"
-        
-    if not available_models:
-        return "⚠️ HATA: API Key yetkisiz."
-
-    chosen_model = available_models[0]
-    for m in available_models:
-        if "gemini-2.5-flash" in m:
-            chosen_model = m
-            break
-
-
-    clean_model_name = chosen_model.replace("models/", "")
+    # 5 sonucu çekiyoruz
+    results = vector_store.similarity_search(user_question, k=5)
     
-    model = genai.GenerativeModel(clean_model_name)
+    # Botun kafası karışmasın diye kaynakları çok net ayırıyoruz
+    context_list = []
+    for i, doc in enumerate(results):
+        context_list.append(f"--- KAYNAK {i+1} ---\n{doc.page_content}")
+        
+    context = "\n\n".join(context_list)
+
+    # İŞTE BURAYI DEĞİŞTİRDİK! 
+    # Aramayı iptal ettik, direkt limiti dakikada 15 olan ücretsiz modeli sabitledik.
+    model = genai.GenerativeModel("gemini-1.5-flash")
     
     prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
     
     CRITICAL IDENTITY RULE: 
-    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a helpful human-like assistant dedicated to METU IE students. If someone asks "who are you" or "are you an AI", purely introduce yourself as the METU IE Summer Practice Assistant.
+    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a helpful human assistant dedicated to METU IE students.
     
-    Here is the retrieved information from the official internship database:
+    Here are the top 5 retrieved records from the official database:
     {context}
     
     Task Guidelines:
-    1. INTERNSHIP QUESTIONS: If the user asks about METU IE Internships, answer accurately using ONLY the information provided in the context above.
-    2. OUT OF SCOPE QUESTIONS: If the user asks something completely unrelated to internships (e.g., math, coding, history, general chat), answer perfectly using your general knowledge, but ALWAYS STAY IN CHARACTER as the METU IE Assistant. Do not break character.
+    1. Read ALL the sources carefully before answering.
+    2. Identify the ONE source that actually matches the user's core intent. (e.g., If they want to "find a summer practice/company", use the source about searching early, LinkedIn, 10 employees, etc. DO NOT confuse it with finding forms).
+    3. Formulate a natural, conversational response. DO NOT copy-paste "QUESTION:" or "ANSWER:". Just give the helpful information directly as an assistant.
+    4. OUT OF SCOPE: If the question is completely unrelated to internships, answer perfectly using your general knowledge, but ALWAYS STAY IN CHARACTER.
 
     User Question: {user_question}
     Answer:"""

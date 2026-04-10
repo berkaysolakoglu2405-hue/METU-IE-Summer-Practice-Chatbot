@@ -1,12 +1,11 @@
 import streamlit as st
 import os
+import google.generativeai as genai
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage, SystemMessage
- 
+
 # ══════════════════════════════════════════════════════════════
 #  PAGE CONFIG
 # ══════════════════════════════════════════════════════════════
@@ -15,15 +14,15 @@ st.set_page_config(
     page_icon="🎓",
     layout="wide",
 )
- 
+
 # ══════════════════════════════════════════════════════════════
-#  API KEY — Streamlit Secrets'tan otomatik okunur
+#  API KEY
 # ══════════════════════════════════════════════════════════════
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
 except Exception:
     API_KEY = os.environ.get("GOOGLE_API_KEY", "")
- 
+
 if not API_KEY:
     st.error(
         "🔑 **API Key not found.**\n\n"
@@ -31,7 +30,10 @@ if not API_KEY:
         "```toml\nGOOGLE_API_KEY = \"AIza...\"\n```"
     )
     st.stop()
- 
+
+# Configure Gemini
+genai.configure(api_key=API_KEY)
+
 # ══════════════════════════════════════════════════════════════
 #  CSS
 # ══════════════════════════════════════════════════════════════
@@ -76,40 +78,40 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 </style>
 """, unsafe_allow_html=True)
- 
+
 # ══════════════════════════════════════════════════════════════
 #  KNOWLEDGE BASE
 # ══════════════════════════════════════════════════════════════
 KNOWLEDGE_BASE = """
 === METU IE SUMMER PRACTICE - OFFICIAL INFORMATION ===
- 
+
 GENERAL OVERVIEW:
 METU Industrial Engineering Summer Practice program allows students to apply theoretical knowledge in real-world settings.
 Two mandatory internships: IE 300 (after 3rd year) and IE 400 (after 4th year).
- 
+
 DURATION:
 Both IE 300 and IE 400 require minimum 20 working days (4 weeks).
 Weekends and official holidays do not count toward this requirement.
 Any leave days given by the company are also deducted from the total.
- 
+
 APPLICATION PROCESS:
 1. Fill online application at sp-ie.metu.edu.tr
 2. Enter company details and internship dates
 3. Upload required documents
 4. Wait for department approval
 5. Complete SGK (Social Security) registration
- 
+
 REQUIRED DOCUMENTS:
 Before internship:
 - Internship Application Form (online)
 - SGK Form (for social security)
 - Company Acceptance Letter
- 
+
 After internship:
 - Internship Logbook (daily records)
 - Evaluation Form (signed by supervisor)
 - Internship Completion Report
- 
+
 IE 300 INTERNSHIP:
 - For students completing their 3rd year
 - Prerequisite: successful completion of IE 200
@@ -117,7 +119,7 @@ IE 300 INTERNSHIP:
 - Manufacturing or service sector companies are eligible
 - Emphasis on observation and hands-on experience
 - Minimum 20 working days required
- 
+
 IE 400 INTERNSHIP:
 - For students completing their 4th year
 - Prerequisite: successful completion of IE 300 internship
@@ -125,110 +127,107 @@ IE 400 INTERNSHIP:
 - Covers engineering analysis, system design, or process improvement
 - Minimum 20 working days required
 - IE 300 and IE 400 cannot be done in the same summer
- 
+
 LOGBOOK:
 - Must be filled out every working day
 - Describe daily activities, observations, and lessons learned
 - Must be signed/approved by company supervisor (daily or weekly)
 - Submitted to the department at the end of the internship
- 
+
 INTERNSHIP REPORT:
 - Can be written in English or Turkish
 - Typical length: 20 to 40 pages
 - Must include: company introduction, work carried out, skills gained, conclusion
 - Submitted after the internship ends
- 
+
 EVALUATION:
 - Based on the logbook quality and completeness
 - Quality of the internship report
 - Company supervisor evaluation form
 - An oral presentation may be required
- 
+
 ELIGIBLE COMPANIES:
 - Any manufacturing or service company related to Industrial Engineering
 - Must have at least 10 employees
 - Must have an engineer available to supervise the intern
 - Suitable sectors: manufacturing plants, banks, hospitals, logistics companies, consulting firms
- 
+
 INTERNSHIP ABROAD:
 - Allowed, but prior departmental approval is mandatory
 - Same requirements apply (duration, documents, report)
 - Erasmus+ internship grant opportunities available through the International Relations Office
- 
+
 SGK INSURANCE:
 - Arranged by the department secretary before the internship starts
 - Students are covered by occupational accident and occupational disease insurance
 - Student must submit all required documents before the internship begins
- 
+
 PAYMENT:
 - Internship payment is not mandatory; it depends on the company
 - Some companies pay interns a daily or monthly wage
 - Being paid or unpaid does not affect the validity of the internship
- 
+
 DEADLINES:
 - Application deadlines are announced each semester by the department
 - Summer internship applications are typically due in May or June
 - Apply at least 3 weeks before the internship start date
 - Check sp-ie.metu.edu.tr for current deadlines
- 
+
 WHAT IF INTERNSHIP IS NOT APPROVED:
 - Student will be asked for additional information or documents
 - After corrections, it will be re-evaluated
 - In serious cases, the student may need to redo the internship
- 
+
 CONTACT AND OFFICIAL SOURCE:
 - Official website: https://sp-ie.metu.edu.tr/en
 - Department secretary office for in-person assistance
 """
- 
+
 FAQ_TEXT = """
 Q: What documents are required for IE 300?
 A: Before: Internship Application Form, Company Acceptance Letter, SGK form.
    After: Internship logbook, supervisor evaluation form, completion report.
- 
+
 Q: Can I do IE 300 and IE 400 in the same summer?
-A: No. IE 300 must be successfully completed before starting IE 400. They must be done in separate summers.
- 
+A: No. IE 300 must be successfully completed before starting IE 400.
+
 Q: Can I intern abroad?
-A: Yes, but prior departmental approval is mandatory. The same duration and document requirements apply.
- 
+A: Yes, but prior departmental approval is mandatory. Same requirements apply.
+
 Q: How should I fill the logbook?
-A: Fill it every working day. Describe activities and observations. Have your supervisor sign it daily or weekly.
- 
+A: Fill it every working day. Describe activities and observations. Have your supervisor sign it.
+
 Q: Who arranges the SGK insurance?
-A: The department secretary arranges it. Submit all required documents before the internship starts.
- 
+A: The department secretary arranges it before the internship starts.
+
 Q: Will I get paid during the internship?
 A: It depends on the company. Payment is not required but some companies do pay interns.
- 
+
 Q: How long is the internship?
-A: Minimum 20 working days (4 weeks) for both IE 300 and IE 400. Weekends and holidays do not count.
- 
+A: Minimum 20 working days (4 weeks) for both IE 300 and IE 400.
+
 Q: When is the application deadline?
-A: For summer internships, typically May-June. Check sp-ie.metu.edu.tr for exact current dates.
- 
+A: For summer internships, typically May-June. Check sp-ie.metu.edu.tr for exact dates.
+
 Q: What companies are eligible?
-A: Any IE-related company with at least 10 employees and a supervising engineer on staff.
- 
+A: Any IE-related company with at least 10 employees and a supervising engineer.
+
 Q: How is the internship evaluated?
-A: Logbook completeness, report quality, supervisor evaluation form, and possibly an oral presentation.
- 
+A: Logbook completeness, report quality, supervisor evaluation form, possibly an oral presentation.
+
 Q: What is the difference between IE 300 and IE 400?
-A: IE 300 is for 3rd-year students focusing on basic engineering applications. IE 400 is for 4th-year students and focuses on advanced engineering problems. IE 300 must be completed before IE 400.
- 
+A: IE 300 is for 3rd-year students (basic applications). IE 400 is for 4th-year students (advanced problems). IE 300 must be completed before IE 400.
+
 Q: Do I need IE 200 before IE 300?
 A: Yes. Successful completion of IE 200 is a prerequisite for IE 300.
- 
+
 Q: Can my internship report be in Turkish?
-A: Yes. The report can be written in either English or Turkish.
- 
+A: Yes. The report can be written in English or Turkish.
+
 Q: What happens if my internship is rejected?
-A: You will be asked for additional documents. After corrections it will be re-evaluated. In serious cases you may need to redo the internship.
- 
-Q: How do I start the application?
-A: Go to sp-ie.metu.edu.tr, fill the online form with company details and dates, upload documents, and wait for department approval.
+A: You will be asked for additional documents. After corrections it will be re-evaluated.
 """
- 
+
 # ══════════════════════════════════════════════════════════════
 #  OUT-OF-SCOPE DETECTION
 # ══════════════════════════════════════════════════════════════
@@ -243,13 +242,12 @@ SCOPE_KEYWORDS = [
     "complete", "supervisor", "signed", "submit", "ie200", "ie 200",
     "prerequisite", "reject", "report", "turkish", "english",
 ]
- 
+
 def is_out_of_scope(query: str) -> bool:
-    q = query.lower()
-    return not any(kw in q for kw in SCOPE_KEYWORDS)
- 
+    return not any(kw in query.lower() for kw in SCOPE_KEYWORDS)
+
 # ══════════════════════════════════════════════════════════════
-#  FAISS VECTOR STORE (runs once, cached)
+#  FAISS VECTOR STORE — HuggingFace embeddings (no API needed)
 # ══════════════════════════════════════════════════════════════
 @st.cache_resource(show_spinner=False)
 def build_vector_store():
@@ -262,29 +260,35 @@ def build_vector_store():
     chunks = splitter.split_text(full_text)
     docs = [Document(page_content=c) for c in chunks]
     return FAISS.from_documents(docs, embeddings)
- 
+
 # ══════════════════════════════════════════════════════════════
-#  GEMINI ANSWER (via LangChain — no google.generativeai import)
+#  GEMINI — called directly, no langchain wrapper
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(question: str, context: str) -> str:
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-pro",
-        google_api_key=API_KEY,
-        temperature=0.2,
-    )
-    messages = [
-        SystemMessage(content=(
-            "You are a helpful assistant for METU Industrial Engineering Summer Practice "
-            "(IE 300 & IE 400). Answer using ONLY the context provided. "
-            "If the answer is not in the context, say: 'For the most accurate information, "
-            "please visit sp-ie.metu.edu.tr or contact the IE Department secretary.' "
-            "Use bullet points for lists. Be concise and professional."
-        )),
-        HumanMessage(content=f"Context:\n{context}\n\nQuestion: {question}"),
-    ]
-    response = llm.invoke(messages)
-    return response.content
- 
+    # Try models in order until one works
+    model_names = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
+    last_error = None
+    for model_name in model_names:
+        try:
+            model = genai.GenerativeModel(model_name)
+            prompt = f"""You are a helpful assistant for METU Industrial Engineering Summer Practice (IE 300 & IE 400).
+Answer the student's question using ONLY the context below.
+If the answer is not in the context, say: "For the most accurate information, please visit sp-ie.metu.edu.tr or contact the IE Department secretary."
+Use bullet points for lists. Be concise and professional.
+
+Context:
+{context}
+
+Question: {question}
+
+Answer:"""
+            response = model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            last_error = e
+            continue
+    return f"⚠️ Could not reach Gemini API. Last error: `{last_error}`\n\nPlease check your API key in Streamlit Secrets."
+
 # ══════════════════════════════════════════════════════════════
 #  UI — HEADER
 # ══════════════════════════════════════════════════════════════
@@ -294,7 +298,7 @@ st.markdown("""
     <p>IE 300 &amp; IE 400 · Applications · Documents · Deadlines · Process</p>
 </div>
 """, unsafe_allow_html=True)
- 
+
 # ══════════════════════════════════════════════════════════════
 #  UI — SIDEBAR
 # ══════════════════════════════════════════════════════════════
@@ -303,7 +307,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 📚 Sample Questions")
     st.caption("Click to ask instantly:")
- 
     samples = [
         "What documents are required for IE 300?",
         "How do I apply for the internship?",
@@ -319,7 +322,6 @@ with st.sidebar:
     for q in samples:
         if st.button(q, key=f"btn_{q[:25]}"):
             st.session_state["prefill"] = q
- 
     st.markdown("---")
     st.markdown("📌 **Official source:**")
     st.markdown("[sp-ie.metu.edu.tr/en](https://sp-ie.metu.edu.tr/en)")
@@ -327,7 +329,7 @@ with st.sidebar:
     if st.button("🗑️ Clear Chat", key="clear"):
         st.session_state.messages = []
         st.rerun()
- 
+
 # ══════════════════════════════════════════════════════════════
 #  UI — CHAT
 # ══════════════════════════════════════════════════════════════
@@ -348,20 +350,20 @@ if "messages" not in st.session_state:
             ),
         }
     ]
- 
+
 prefill = st.session_state.pop("prefill", None)
- 
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
- 
+
 user_input = st.chat_input("Ask anything about METU IE Summer Practice…") or prefill
- 
+
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.markdown(user_input)
- 
+
     with st.chat_message("assistant"):
         if is_out_of_scope(user_input):
             answer = (
@@ -382,14 +384,11 @@ if user_input:
                     answer = ask_gemini(user_input, context)
                     st.markdown(answer)
                 except Exception as e:
-                    answer = (
-                        f"⚠️ **An error occurred:** `{e}`\n\n"
-                        "Please check that your API key is correct in Streamlit Secrets."
-                    )
+                    answer = f"⚠️ **An error occurred:** `{e}`"
                     st.markdown(answer)
- 
+
     st.session_state.messages.append({"role": "assistant", "content": answer})
- 
+
 st.markdown(
     '<div class="footer">'
     'METU IE Summer Practice Assistant · Powered by Google Gemini · '

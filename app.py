@@ -181,7 +181,7 @@ def is_out_of_scope(query: str) -> bool:
 def build_vector_store(api_key: str):
     embeddings = GoogleGenerativeAIEmbeddings(
         # Başına 'models/' eklemek Google'ın 'bulamadım' demesini engeller
-        model="models/embedding-001", 
+        model="models/embedding-004", 
         google_api_key=api_key,
     )
     full_text = KNOWLEDGE_BASE + "\n\n" + FAQ_TEXT

@@ -180,10 +180,10 @@ def is_out_of_scope(query: str) -> bool:
 @st.cache_resource(show_spinner=False)
 def build_vector_store(api_key: str):
     embeddings = GoogleGenerativeAIEmbeddings(
-        # Başına 'models/' eklemek Google'ın 'bulamadım' demesini engeller
-        model="models/text-embedding-004", 
+        model="models/text-embedding-004",
         google_api_key=api_key,
     )
+
     full_text = KNOWLEDGE_BASE + "\n\n" + FAQ_TEXT
 
     if os.path.exists("scraped_data.txt"):
@@ -199,9 +199,7 @@ def build_vector_store(api_key: str):
 # ── Ask Gemini with retrieved context ─────────────────────────
 def ask_gemini(api_key: str, question: str, context: str) -> str:
     genai.configure(api_key=api_key)
-    # Başına 'models/' ekleyerek sağlama alıyoruz
-    model = genai.GenerativeModel("models/gemini-1.5-flash")
-    # ... prompt ve response kısımları aynı ...
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
     prompt = f"""You are a helpful assistant for METU Industrial Engineering Summer Practice (IE 300 & IE 400).
 Answer the student's question using ONLY the context below.
@@ -232,16 +230,16 @@ st.markdown("""
 # Sidebar
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
-    
-    # KASA KONTROLÜ: Eğer Secrets'ta anahtar varsa onu kullan, yoksa kutucuğu göster
-    default_key = st.secrets.get("GOOGLE_API_KEY", "")
-    
     api_key = st.text_input(
         "Google Gemini API Key",
         type="password",
-        value=default_key, # Varsa kasadan çekip buraya yazar
-        placeholder="AIza..."
+        placeholder="AIza...",
+        help="Get your free key at aistudio.google.com/app/apikey",
     )
+    if api_key:
+        st.success("✅ API Key set")
+    else:
+        st.info("🔑 Enter your API Key to start.")
 
     st.markdown("---")
     st.markdown("### 📚 Sample Questions")

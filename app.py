@@ -26,20 +26,63 @@ else:
     st.stop()
 
 # ══════════════════════════════════════════════════════════════
-#  CSS (Orijinal Bordo Tema)
+#  CSS (Karanlık Mod Uyumluluğu Artırılmış Orijinal Tema)
 # ══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-html, body, [data-testid="stAppViewContainer"] { font-family: 'Inter', sans-serif; background-color: #f8f5f0; }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #7a0000 0%, #4a0000 100%); }
-[data-testid="stSidebar"] * { color: #fff !important; }
-[data-testid="stSidebar"] .stButton > button { background: rgba(255,255,255,0.12) !important; color: #fff !important; border: 1px solid rgba(255,255,255,0.25) !important; border-radius: 8px !important; text-align: left !important; width: 100% !important; margin-bottom: 4px !important; padding: 6px 10px !important; }
-[data-testid="stSidebar"] .stButton > button:hover { background: rgba(255,255,255,0.22) !important; }
-.main-header { background: linear-gradient(90deg, #8B0000, #CC0000); padding: 1.4rem 2rem; border-radius: 14px; margin-bottom: 1.5rem; box-shadow: 0 4px 16px rgba(139,0,0,0.25); }
-.main-header h2 { color: white; margin: 0; font-size: 1.6rem; font-weight: 600; }
-.main-header p  { color: #ffcccc; margin: 0.3rem 0 0 0; font-size: 0.9rem; }
-.footer { text-align: center; font-size: 0.75rem; color: #aaa; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e0d8d0; }
+
+/* Ana Font ve Arka Plan Sabitleme */
+html, body, [data-testid="stAppViewContainer"] { 
+    font-family: 'Inter', sans-serif; 
+}
+
+/* Sidebar Tasarımı */
+[data-testid="stSidebar"] { 
+    background: linear-gradient(180deg, #7a0000 0%, #4a0000 100%) !important; 
+}
+[data-testid="stSidebar"] * { 
+    color: #ffffff !important; 
+}
+[data-testid="stSidebar"] .stButton > button { 
+    background: rgba(255,255,255,0.12) !important; 
+    color: #ffffff !important; 
+    border: 1px solid rgba(255,255,255,0.25) !important; 
+    border-radius: 8px !important; 
+    text-align: left !important; 
+    width: 100% !important; 
+    margin-bottom: 4px !important; 
+    padding: 6px 10px !important; 
+}
+[data-testid="stSidebar"] .stButton > button:hover { 
+    background: rgba(255,255,255,0.22) !important; 
+}
+
+/* Header Tasarımı */
+.main-header { 
+    background: linear-gradient(90deg, #8B0000, #CC0000); 
+    padding: 1.4rem 2rem; 
+    border-radius: 14px; 
+    margin-bottom: 1.5rem; 
+    box-shadow: 0 4px 16px rgba(139,0,0,0.25); 
+}
+.main-header h2 { color: white !important; margin: 0; font-size: 1.6rem; font-weight: 600; }
+.main-header p  { color: #ffcccc !important; margin: 0.3rem 0 0 0; font-size: 0.9rem; }
+
+/* Footer Tasarımı */
+.footer { 
+    text-align: center; 
+    font-size: 0.75rem; 
+    color: #888; 
+    margin-top: 2rem; 
+    padding-top: 1rem; 
+    border-top: 1px solid rgba(128,128,128,0.2); 
+}
+
+/* Karanlık Modda Mesajların Okunabilirliği İçin */
+[data-testid="stChatMessage"] {
+    background-color: transparent !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -150,7 +193,7 @@ def ask_gemini(user_question: str) -> str:
         if not available_models:
             return "⚠️ HATA: API Key yetkisiz veya modellere erişilemiyor."
             
-        # SADECE BU KISMI DEĞİŞTİRDİM (2.0 ve 2.5 yasak)
+        # 2.0 ve 2.5 yasaklayan filtre
         safe_models = [m for m in available_models if "2.0" not in m and "2.5" not in m and "vision" not in m]
         
         if not safe_models:

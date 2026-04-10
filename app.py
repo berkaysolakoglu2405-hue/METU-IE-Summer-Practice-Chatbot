@@ -2,7 +2,8 @@ import streamlit as st
 import os
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -252,10 +253,7 @@ def is_out_of_scope(query: str) -> bool:
 # ══════════════════════════════════════════════════════════════
 @st.cache_resource(show_spinner=False)
 def build_vector_store():
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
-        google_api_key=API_KEY,
-    )
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     full_text = KNOWLEDGE_BASE + "\n\n" + FAQ_TEXT
     if os.path.exists("scraped_data.txt"):
         with open("scraped_data.txt", "r", encoding="utf-8") as f:

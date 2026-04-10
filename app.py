@@ -1,3 +1,6 @@
+
+Copy
+
 import streamlit as st
 import google.generativeai as genai
 import os
@@ -280,7 +283,7 @@ def is_out_of_scope(query: str) -> bool:
 @st.cache_resource(show_spinner=False)
 def build_vector_store():
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004",
+        model="models/embedding-001",
         google_api_key=API_KEY,
     )
  

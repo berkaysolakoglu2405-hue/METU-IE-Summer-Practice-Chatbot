@@ -167,7 +167,7 @@ def ask_gemini(user_question: str) -> str:
 
     chosen_model = available_models[0]
     for m in available_models:
-        if "gemini-1.5-flash" in m:
+        if "gemini-2.5-flash" in m:
             chosen_model = m
             break
         elif "gemini-pro" in m:

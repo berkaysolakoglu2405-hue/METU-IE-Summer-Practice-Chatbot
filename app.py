@@ -180,7 +180,7 @@ def is_out_of_scope(query: str) -> bool:
 @st.cache_resource(show_spinner=False)
 def build_vector_store(api_key: str):
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
+        model="models/text-embedding-004",
         google_api_key=api_key,
     )
 

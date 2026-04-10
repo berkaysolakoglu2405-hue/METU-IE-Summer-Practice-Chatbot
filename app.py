@@ -180,7 +180,7 @@ def is_out_of_scope(query: str) -> bool:
 @st.cache_resource(show_spinner=False)
 def build_vector_store(api_key: str):
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/gemini-embedding-001",
+        model="models/text-embedding-004",
         google_api_key=api_key,
     )
 
@@ -199,7 +199,7 @@ def build_vector_store(api_key: str):
 # ── Ask Gemini with retrieved context ─────────────────────────
 def ask_gemini(api_key: str, question: str, context: str) -> str:
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-3.0-flash")
 
     prompt = f"""You are a helpful assistant for METU Industrial Engineering Summer Practice (IE 300 & IE 400).
 Answer the student's question using ONLY the context below.

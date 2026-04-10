@@ -147,7 +147,7 @@ def build_vector_store():
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  KİMLİĞİ GİZLENMİŞ, SIKIYÖNETİM MELEZ BEYİN (V3 BLACKLIST)
+#  KİMLİĞİ GİZLENMİŞ, DETAYLI VE YARDIMSEVER MELEZ BEYİN
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
@@ -166,15 +166,13 @@ def ask_gemini(user_question: str) -> str:
         if not available_models:
             return "⚠️ HATA: API Key şu an hiçbir modele erişemiyor."
             
-        # 🚨 KESİN KURAL: İÇİNDE 2.0 VE 2.5 GEÇEN HER ŞEY YASAKLANDI 🚨
+        # Limit sorunu yaşamamak için 2.0 ve 2.5 modellerinden kaçıyoruz
         safe_models = [m for m in available_models if "2.0" not in m and "2.5" not in m and "vision" not in m]
         
-        # Eğer güvenli model kalmadıysa, Google elindeki 1.5'i tamamen silmiş demektir.
         if not safe_models:
-            return f"⚠️ HATA: Google API key'indeki bütün bedava modelleri kitlemiş! Geriye sadece şunlar kalmış: {available_models}. Lütfen aistudio'dan sıfır bir Gmail ile yeni proje aç."
+            return f"⚠️ HATA: Geçerli model bulunamadı."
             
         chosen_model = safe_models[0]
-        # Kalan güvenli modellerden 1.5-flash olanı seç
         for m in safe_models:
             if "1.5-flash" in m:
                 chosen_model = m
@@ -186,19 +184,19 @@ def ask_gemini(user_question: str) -> str:
     except Exception as e:
         return f"⚠️ Model bağlantı hatası: {e}"
     
+    # 🚨 PROMPT GÜNCELLENDİ: ARTIK ÇOK DAHA DETAYLI, AÇIKLAYICI VE SAMİMİ 🚨
     prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
     
     CRITICAL IDENTITY RULE: 
-    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a helpful human assistant dedicated to METU IE students.
+    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a highly knowledgeable, friendly, and helpful human assistant dedicated to METU IE students.
     
     Here are the top 5 retrieved records from the official database:
     {context}
     
     Task Guidelines:
-    1. Read ALL the sources carefully before answering.
-    2. Identify the ONE source that actually matches the user's core intent.
-    3. Formulate a natural, conversational response. DO NOT copy-paste "QUESTION:" or "ANSWER:". Just give the helpful information directly as an assistant.
-    4. OUT OF SCOPE: If the question is completely unrelated to internships, answer perfectly using your general knowledge, but ALWAYS STAY IN CHARACTER.
+    1. Base your factual information STRICTLY on the retrieved records above. Do not invent fake university rules.
+    2. However, provide a RICH, DETAILED, and CONVERSATIONAL response. Elaborate naturally on the facts to make your answer comprehensive, supportive, and easy to understand. Do not just give a dry, robotic answer.
+    3. If the user asks something completely unrelated to internships, answer perfectly using your general knowledge in a detailed way, but ALWAYS STAY IN CHARACTER.
 
     User Question: {user_question}
     Answer:"""

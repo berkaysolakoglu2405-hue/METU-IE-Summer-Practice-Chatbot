@@ -4,7 +4,7 @@ import os
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 # ── Page Config ────────────────────────────────────────────────
 st.set_page_config(page_title="METU IE Summer Practice Chatbot", page_icon="🎓")

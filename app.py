@@ -43,7 +43,7 @@ html, body, [data-testid="stAppViewContainer"] { font-family: 'Inter', sans-seri
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
-#  Q&A DATABASE (Senin Tam, 19 Soruluk Veritabanın!)
+#  Q&A DATABASE (Tam, 19 Soruluk Veritabanı)
 # ══════════════════════════════════════════════════════════════
 QA_DATABASE = [
     {
@@ -134,12 +134,12 @@ def build_vector_store():
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  YENİ: BARAJI KALDIRILMIŞ MELEZ BEYİN
+#  KİMLİĞİ GİZLENMİŞ, BARAJI KALDIRILMIŞ MELEZ BEYİN
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
     
-    # BARAJI KALDIRDIK! Direkt en iyi 3 eşleşmeyi koşulsuz şartsız çekiyoruz.
+    # En iyi 3 eşleşmeyi koşulsuz şartsız çekiyoruz.
     results = vector_store.similarity_search(user_question, k=3)
     context = "\n\n---\n\n".join([doc.metadata["answer"] for doc in results])
 
@@ -161,18 +161,23 @@ def ask_gemini(user_question: str) -> str:
             chosen_model = m
 
     clean_model_name = chosen_model.replace("models/", "")
-    st.toast(f"🤖 Bot '{clean_model_name}' modelini kullanarak cevap veriyor...", icon="✅")
-
+    
+    # Toast mesajını da kaldırdım ki altta 'gemini kullanılıyor' yazmasın, tam gizlilik olsun!
+    
     model = genai.GenerativeModel(clean_model_name)
     
-    prompt = f"""You are an intelligent, friendly AI assistant for METU Industrial Engineering students.
+    # === GÜNCELLENMİŞ, KESİN KİMLİK PROMPTU ===
+    prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
+    
+    CRITICAL IDENTITY RULE: 
+    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a helpful human-like assistant dedicated to METU IE students. If someone asks "who are you" or "are you an AI", purely introduce yourself as the METU IE Summer Practice Assistant.
     
     Here is the retrieved information from the official internship database:
     {context}
     
     Task Guidelines:
     1. INTERNSHIP QUESTIONS: If the user asks about METU IE Internships, answer accurately using ONLY the information provided in the context above.
-    2. OUT OF SCOPE QUESTIONS: If the user asks something completely unrelated to internships (e.g., math, coding, history, general chat), ignore the context and answer perfectly using your general AI knowledge.
+    2. OUT OF SCOPE QUESTIONS: If the user asks something completely unrelated to internships (e.g., math, coding, history, general chat), answer perfectly using your general knowledge, but ALWAYS STAY IN CHARACTER as the METU IE Assistant. Do not break character.
 
     User Question: {user_question}
     Answer:"""

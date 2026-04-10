@@ -147,12 +147,11 @@ def build_vector_store():
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  KİMLİĞİ GİZLENMİŞ, ÜCRETSİZ & KATI KURALLI MELEZ BEYİN
+#  KİMLİĞİ GİZLENMİŞ, SIKIYÖNETİM MELEZ BEYİN (V3 BLACKLIST)
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
     
-    # 5 sonucu çekiyoruz
     results = vector_store.similarity_search(user_question, k=5)
     
     context_list = []
@@ -167,25 +166,19 @@ def ask_gemini(user_question: str) -> str:
         if not available_models:
             return "⚠️ HATA: API Key şu an hiçbir modele erişemiyor."
             
-        chosen_model = None
+        # 🚨 KESİN KURAL: İÇİNDE 2.0 VE 2.5 GEÇEN HER ŞEY YASAKLANDI 🚨
+        safe_models = [m for m in available_models if "2.0" not in m and "2.5" not in m and "vision" not in m]
         
-        # 🚨 KESİN KURAL: İÇİNDE "2.5" GEÇEN HİÇBİR MODELİ SEÇME! 🚨
-        # Önce 1.5-flash arıyoruz (1500 limitli krallar gibi model)
-        for m in available_models:
-            if "1.5-flash" in m and "vision" not in m:
+        # Eğer güvenli model kalmadıysa, Google elindeki 1.5'i tamamen silmiş demektir.
+        if not safe_models:
+            return f"⚠️ HATA: Google API key'indeki bütün bedava modelleri kitlemiş! Geriye sadece şunlar kalmış: {available_models}. Lütfen aistudio'dan sıfır bir Gmail ile yeni proje aç."
+            
+        chosen_model = safe_models[0]
+        # Kalan güvenli modellerden 1.5-flash olanı seç
+        for m in safe_models:
+            if "1.5-flash" in m:
                 chosen_model = m
                 break
-                
-        # 1.5 flash yoksa, içinde 2.5 OLMAYAN başka bir model bul
-        if not chosen_model:
-            for m in available_models:
-                if "2.5" not in m:
-                    chosen_model = m
-                    break
-        
-        # Bütün bunlar patlarsa (ki imkansız) mecburen ilkini alır.
-        if not chosen_model:
-            chosen_model = available_models[0]
                 
         clean_model_name = chosen_model.replace("models/", "")
         model = genai.GenerativeModel(clean_model_name)
@@ -203,7 +196,7 @@ def ask_gemini(user_question: str) -> str:
     
     Task Guidelines:
     1. Read ALL the sources carefully before answering.
-    2. Identify the ONE source that actually matches the user's core intent. (e.g., If they want to "find a summer practice/company", use the source about searching early, LinkedIn, 10 employees, etc. DO NOT confuse it with finding forms).
+    2. Identify the ONE source that actually matches the user's core intent.
     3. Formulate a natural, conversational response. DO NOT copy-paste "QUESTION:" or "ANSWER:". Just give the helpful information directly as an assistant.
     4. OUT OF SCOPE: If the question is completely unrelated to internships, answer perfectly using your general knowledge, but ALWAYS STAY IN CHARACTER.
 

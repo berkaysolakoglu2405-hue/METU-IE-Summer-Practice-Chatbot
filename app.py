@@ -253,15 +253,18 @@ st.markdown(
 )
 
 # ══════════════════════════════════════════════════════════════
-#  AUTO-SCROLL (AŞAĞI IŞINLANMA) HİLESİ
+#  AUTO-SCROLL (AŞAĞI IŞINLANMA) HİLESİ V2 (Gecikmeli)
 # ══════════════════════════════════════════════════════════════
 components.html(
-    f"""
+    """
     <script>
-        var chatHistory = window.parent.document.querySelector('.main');
-        if (chatHistory) {{
-            chatHistory.scrollTo({{ top: chatHistory.scrollHeight, behavior: 'smooth' }});
-        }}
+        function forceScroll() {
+            var parentDoc = window.parent.document;
+            var appContainer = parentDoc.querySelector('.main') || parentDoc.documentElement;
+            appContainer.scrollTo({ top: parentDoc.body.scrollHeight, behavior: 'smooth' });
+        }
+        setTimeout(forceScroll, 100);
+        setTimeout(forceScroll, 600);
     </script>
     """,
     height=0

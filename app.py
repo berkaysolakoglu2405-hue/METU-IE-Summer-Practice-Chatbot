@@ -26,7 +26,7 @@ else:
     st.stop()
 
 # ══════════════════════════════════════════════════════════════
-#  CSS (Orijinal Bordo Tema)
+#  CSS (Orijinal Bordo Tema ve Detaylar)
 # ══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
@@ -44,41 +44,41 @@ html, body, [data-testid="stAppViewContainer"] { font-family: 'Inter', sans-seri
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
-#  Q&A DATABASE (Aynı Veriler)
+#  Q&A DATABASE (Aynı Veritabanı)
 # ══════════════════════════════════════════════════════════════
 QA_DATABASE = [
     {"question": "What documents are required for IE 300? What papers do I need for IE 300 internship?", "answer": "**Required documents for IE 300:**\n\n- Internship Application Form (sp-ie.metu.edu.tr)\n- Company Acceptance Letter\n- SGK Form\n- Logbook, Supervisor Evaluation, and Report (Afterwards)"},
-    {"question": "What documents are required for IE 400? What papers do I need for IE 400 internship?", "answer": "**Required documents for IE 400:**\n\n- Internship Application Form (sp-ie.metu.edu.tr)\n- Company Acceptance Letter\n- SGK Form\n- Logbook, Supervisor Evaluation, and Report (Afterwards)\n- PREREQUISITE: Must have completed IE 300."},
-    {"question": "What are the requirements for IE 300? IE 300 requirements prerequisites conditions", "answer": "**IE 300 requirements:**\n- Completed **IE 200**\n- Min 20 working days\n- Min 10 employees + 1 Engineer supervisor."},
-    {"question": "What are the requirements for IE 400? IE 400 requirements prerequisites conditions", "answer": "**IE 400 requirements:**\n- Completed **IE 300**\n- Min 20 working days\n- Min 10 employees + 1 Engineer supervisor."},
-    {"question": "How do I apply for the internship? How to apply steps", "answer": "1. Fill form at sp-ie.metu.edu.tr\n2. Get Acceptance Letter\n3. Wait for department approval (Apply 3 weeks before start)."},
-    {"question": "How long does the internship last? Duration days", "answer": "Min 20 working days for both IE 300 and IE 400. Weekends don't count."},
-    {"question": "Can I do IE 300 and IE 400 in the same summer?", "answer": "No. They must be done in separate summers."},
-    {"question": "What is the difference between IE 300 and IE 400?", "answer": "IE 300 (Training I): Basic engineering & observation. Req: IE 200.\nIE 400 (Training II): Advanced analysis & design. Req: IE 300."},
-    {"question": "Can I do my internship abroad?", "answer": "Yes, with prior department approval."},
-    {"question": "Who arranges the SGK insurance?", "answer": "The IE Department secretary handles it after your approval."},
-    {"question": "Will I be paid during my internship?", "answer": "Depends on the company; it's not mandatory."},
-    {"question": "What companies are eligible for internship?", "answer": "Manufacturing or service, min 10 employees, min 1 engineer."},
+    {"question": "What documents are required for IE 400? What papers do I need for IE 400 internship?", "answer": "**Required documents for IE 400:**\n\n- Internship Application Form (sp-ie.metu.edu.tr)\n- Company Acceptance Letter\n- SGK Form\n- Logbook, Supervisor Evaluation, and Report (Afterwards)\n- **PREREQUISITE:** You must have already completed IE 300 before you can start IE 400."},
+    {"question": "What are the requirements for IE 300? IE 300 requirements prerequisites conditions", "answer": "**IE 300 (Industrial Training I) requirements:**\n- Successfully completed **IE 200**\n- Min duration: 20 working days\n- Company must have min 10 employees and 1 supervising engineer."},
+    {"question": "What are the requirements for IE 400? IE 400 requirements prerequisites conditions", "answer": "**IE 400 (Industrial Training II) requirements:**\n- Successfully completed **IE 300**\n- Min duration: 20 working days\n- Company must have min 10 employees and 1 supervising engineer."},
+    {"question": "How do I apply for the internship? How to apply summer practice steps", "answer": "1. Fill form at sp-ie.metu.edu.tr\n2. Get Acceptance Letter\n3. Wait for department approval (Apply at least 3 weeks before start)."},
+    {"question": "How long does the internship last? Duration weeks days", "answer": "Min 20 working days. Weekends and holidays do NOT count."},
+    {"question": "Can I do IE 300 and IE 400 in the same summer?", "answer": "No. IE 300 and IE 400 cannot be done in the same summer."},
+    {"question": "What is the difference between IE 300 and IE 400?", "answer": "IE 300: Basic engineering, observation. Req: IE 200.\nIE 400: Advanced analysis, design. Req: IE 300."},
+    {"question": "Can I do my internship abroad?", "answer": "Yes, but you need prior departmental approval."},
+    {"question": "Who arranges the SGK insurance?", "answer": "The department secretary handles it after your documents are approved."},
+    {"question": "Will I be paid during my internship?", "answer": "Payment depends on the company; it is not mandatory."},
+    {"question": "What companies are eligible for internship?", "answer": "Manufacturing or service companies with min 10 employees and 1 engineer."},
     {"question": "How should I fill the internship logbook?", "answer": "Fill daily, get signed by supervisor, submit at the end."},
-    {"question": "How should I prepare the internship report?", "answer": "English/Turkish, 20-40 pages, submit after training."},
+    {"question": "How should I prepare the internship report?", "answer": "English or Turkish, 20-40 pages, submit after the internship."},
     {"question": "How is the internship evaluated?", "answer": "Logbook + Report + Supervisor Form."},
-    {"question": "What happens if my internship is not approved?", "answer": "You might need to make corrections or redo it."},
-    {"question": "When is the application deadline?", "answer": "Usually May or June. Check sp-ie.metu.edu.tr for exact dates."},
-    {"question": "Where can I find official forms?", "answer": "Visit https://sp-ie.metu.edu.tr/en"},
-    {"question": "How can I find a summer practice?", "answer": "Start early, check LinkedIn, Career Fairs, and personal network."}
+    {"question": "What happens if my internship is not approved?", "answer": "You might need to make corrections or redo the practice."},
+    {"question": "When is the application deadline?", "answer": "Usually in May or June. Check sp-ie.metu.edu.tr for updates."},
+    {"question": "Where can I find official forms information announcements?", "answer": "Visit https://sp-ie.metu.edu.tr/en"},
+    {"question": "How can I find a summer practice?", "answer": "Start early, check LinkedIn, Career Fairs, and your network."}
 ]
 
 # ══════════════════════════════════════════════════════════════
 #  YEREL ARAMA MOTORU
 # ══════════════════════════════════════════════════════════════
-@st.cache_resource(show_spinner="Loading...")
+@st.cache_resource(show_spinner="Loading knowledge base...")
 def build_vector_store():
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     docs = [Document(page_content=qa["question"] + " " + qa["answer"], metadata={"answer": qa["answer"]}) for qa in QA_DATABASE]
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  DOĞRUCU MELEZ BEYİN
+#  KİMLİĞİ GİZLENMİŞ, KOTA KORUMALI VE DOĞRU BEYİN
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
@@ -87,25 +87,25 @@ def ask_gemini(user_question: str) -> str:
 
     try:
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        safe_models = [m for m in available_models if "2.0" not in m and "2.5" not in m]
+        safe_models = [m for m in available_models if "2.0" not in m and "2.5" not in m and "vision" not in m]
         chosen_model = next((m for m in safe_models if "1.5-flash" in m), safe_models[0]).replace("models/", "")
         model = genai.GenerativeModel(chosen_model)
     except Exception as e:
-        return f"Error: {e}"
+        return f"API bağlantı hatası: {e}"
     
-    # 🚨 KRİTİK GÖTTEN SIKMA ÖNLEYİCİ PROMPT 🚨
-    prompt = f"""You are the official 'METU IE Summer Practice Assistant'. 
+    prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
     
-    IDENTITY: Human-like, helpful METU assistant.
+    CRITICAL IDENTITY RULE: 
+    Act like a helpful human-like assistant dedicated to METU IE students.
     
-    OFFICIAL DATA (STRICT):
+    OFFICIAL INFORMATION FROM DATABASE:
     {context}
     
-    RULES:
-    1. For internship questions, ONLY use the 'OFFICIAL DATA' above. 
-    2. TRUTH TEST: In the context, IE 400 requires IE 300. IE 300 requires IE 200. NEVER say IE 400 requires IE 200.
-    3. If the answer is not in the data, say "I couldn't find this in the records, please check with the secretary."
-    4. For general chat, stay in character but don't invent METU rules.
+    STRICT GUIDELINES:
+    1. Base your answer ONLY on the OFFICIAL INFORMATION above. 
+    2. DO NOT hallucinate. For example: IE 400 requires IE 300, NOT IE 200. Check the data carefully.
+    3. If the answer is not in the context, say "I couldn't find the exact information in our records. Please check sp-ie.metu.edu.tr."
+    4. Keep the helpful, conversational tone of an assistant.
 
     User Question: {user_question}
     Answer:"""
@@ -114,24 +114,50 @@ def ask_gemini(user_question: str) -> str:
     return response.text
 
 # ══════════════════════════════════════════════════════════════
-#  UI (Orijinal Akış)
+#  UI (Orijinal Arayüz)
 # ══════════════════════════════════════════════════════════════
-st.markdown('<div class="main-header"><h2>🎓 METU IE Summer Practice Chatbot</h2></div>', unsafe_allow_html=True)
+st.markdown("""
+<div class="main-header">
+    <h2>🎓 METU IE Summer Practice Chatbot</h2>
+    <p>IE 300 &amp; IE 400 · Applications · Documents · Deadlines</p>
+</div>
+""", unsafe_allow_html=True)
+
+with st.sidebar:
+    st.markdown("## 🎓 METU IE\nSummer Practice")
+    st.markdown("---")
+    if st.button("🗑️ Clear Chat"):
+        st.session_state.messages = []
+        st.rerun()
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello! 👋 I'm the METU IE Assistant. How can I help?"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Hello! 👋 I'm the **METU IE Summer Practice Assistant**. How can I help you today?"}]
 
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]): st.markdown(msg["content"])
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-user_input = st.chat_input("Ask me anything...")
+user_input = st.chat_input("Ask about summer practice...")
+
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"): st.markdown(user_input)
+    with st.chat_message("user"):
+        st.markdown(user_input)
+
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            ans = ask_gemini(user_input)
-            st.markdown(ans)
-            st.session_state.messages.append({"role": "assistant", "content": ans})
+            answer = ask_gemini(user_input)
+            st.markdown(answer)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
 
-components.html("""<script>var c = window.parent.document.querySelector('.main'); if(c) c.scrollTo({top: c.scrollHeight, behavior:'smooth'});</script>""", height=0)
+components.html(
+    f"""
+    <script>
+        var chatHistory = window.parent.document.querySelector('.main');
+        if (chatHistory) {{
+            chatHistory.scrollTo({{ top: chatHistory.scrollHeight, behavior: 'smooth' }});
+        }}
+    </script>
+    """,
+    height=0
+)

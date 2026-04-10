@@ -147,7 +147,7 @@ def build_vector_store():
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  KİMLİĞİ GİZLENMİŞ, ÜCRETSİZ LİMİTLERE UYGUN MELEZ BEYİN
+#  KİMLİĞİ GİZLENMİŞ, ÜCRETSİZ & DİNAMİK MELEZ BEYİN
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
@@ -155,16 +155,31 @@ def ask_gemini(user_question: str) -> str:
     # 5 sonucu çekiyoruz
     results = vector_store.similarity_search(user_question, k=5)
     
-    # Botun kafası karışmasın diye kaynakları çok net ayırıyoruz
     context_list = []
     for i, doc in enumerate(results):
         context_list.append(f"--- KAYNAK {i+1} ---\n{doc.page_content}")
         
     context = "\n\n".join(context_list)
 
-    # İŞTE BURAYI DEĞİŞTİRDİK! 
-    # Aramayı iptal ettik, direkt limiti dakikada 15 olan ücretsiz modeli sabitledik.
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    # GOOGLE'IN KAFASINA GÖRE DEĞİŞTİRDİĞİ MODELLERİ BURADA DİNAMİK YAKALIYORUZ (404 ÇÖZÜMÜ)
+    try:
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        if not available_models:
+            return "⚠️ HATA: API Key şu an hiçbir modele erişemiyor. Lütfen yeni oluşturduğun API anahtarının aktif olması için 1 dakika bekle."
+            
+        # Öncelik "flash" olsun, yoksa ilk bulduğu modeli alsın
+        chosen_model = available_models[0]
+        for m in available_models:
+            if "flash" in m:
+                chosen_model = m
+                break
+                
+        clean_model_name = chosen_model.replace("models/", "")
+        model = genai.GenerativeModel(clean_model_name)
+        
+    except Exception as e:
+        return f"⚠️ Model bağlantı hatası: {e}"
     
     prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
     

@@ -9,11 +9,13 @@ from langchain_core.documents import Document
 # ── Page Config ────────────────────────────────────────────────
 st.set_page_config(page_title="METU IE Summer Practice Chatbot", page_icon="🎓")
 
-# ── API Key Setup (Streamlit Secrets'tan çekiyoruz) ────────────
+# ── API Key Setup ────────────────────────────────────────────
 if "GOOGLE_API_KEY" in st.secrets:
+    # BU SATIR ÇOK KRİTİK: Sisteme anahtarı tanıtıyoruz
+    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
     api_key = st.secrets["GOOGLE_API_KEY"]
 else:
-    st.error("⚠️ API Key bulunamadı! Lütfen Streamlit Cloud Settings > Secrets kısmına anahtarı ekleyin.")
+    st.error("⚠️ Secrets kısmında GOOGLE_API_KEY bulunamadı!")
     st.stop()
 
 # ── CSS Theme ──────────────────────────────────────────────────

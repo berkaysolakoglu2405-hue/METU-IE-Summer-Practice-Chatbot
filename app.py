@@ -170,8 +170,7 @@ def ask_gemini(user_question: str) -> str:
         if "gemini-2.5-flash" in m:
             chosen_model = m
             break
-        elif "gemini-pro" in m:
-            chosen_model = m
+
 
     clean_model_name = chosen_model.replace("models/", "")
     

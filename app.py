@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import os
 import google.generativeai as genai
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -22,72 +21,38 @@ if "GOOGLE_API_KEY" in st.secrets:
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
 else:
-    st.error("⚠️ Streamlit Secrets içinde GOOGLE_API_KEY bulunamadı!")
+    st.error("⚠️ GOOGLE_API_KEY not found in Streamlit Secrets!")
     st.stop()
 
 # ══════════════════════════════════════════════════════════════
-#  CSS (Karanlık Mod Uyumluluğu Artırılmış Orijinal Tema)
+#  CSS
 # ══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
-/* Ana Font ve Arka Plan Sabitleme */
-html, body, [data-testid="stAppViewContainer"] { 
-    font-family: 'Inter', sans-serif; 
+html, body, [data-testid="stAppViewContainer"] { font-family: 'Inter', sans-serif; }
+[data-testid="stSidebar"] { background: linear-gradient(180deg, #7a0000 0%, #4a0000 100%) !important; }
+[data-testid="stSidebar"] * { color: #ffffff !important; }
+[data-testid="stSidebar"] .stButton > button {
+    background: rgba(255,255,255,0.12) !important; color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.25) !important; border-radius: 8px !important;
+    text-align: left !important; width: 100% !important;
+    margin-bottom: 4px !important; padding: 6px 10px !important;
 }
-
-/* Sidebar Tasarımı */
-[data-testid="stSidebar"] { 
-    background: linear-gradient(180deg, #7a0000 0%, #4a0000 100%) !important; 
-}
-[data-testid="stSidebar"] * { 
-    color: #ffffff !important; 
-}
-[data-testid="stSidebar"] .stButton > button { 
-    background: rgba(255,255,255,0.12) !important; 
-    color: #ffffff !important; 
-    border: 1px solid rgba(255,255,255,0.25) !important; 
-    border-radius: 8px !important; 
-    text-align: left !important; 
-    width: 100% !important; 
-    margin-bottom: 4px !important; 
-    padding: 6px 10px !important; 
-}
-[data-testid="stSidebar"] .stButton > button:hover { 
-    background: rgba(255,255,255,0.22) !important; 
-}
-
-/* Header Tasarımı */
-.main-header { 
-    background: linear-gradient(90deg, #8B0000, #CC0000); 
-    padding: 1.4rem 2rem; 
-    border-radius: 14px; 
-    margin-bottom: 1.5rem; 
-    box-shadow: 0 4px 16px rgba(139,0,0,0.25); 
+[data-testid="stSidebar"] .stButton > button:hover { background: rgba(255,255,255,0.22) !important; }
+.main-header {
+    background: linear-gradient(90deg, #8B0000, #CC0000);
+    padding: 1.4rem 2rem; border-radius: 14px; margin-bottom: 1.5rem;
+    box-shadow: 0 4px 16px rgba(139,0,0,0.25);
 }
 .main-header h2 { color: white !important; margin: 0; font-size: 1.6rem; font-weight: 600; }
 .main-header p  { color: #ffcccc !important; margin: 0.3rem 0 0 0; font-size: 0.9rem; }
-
-/* Footer Tasarımı */
-.footer { 
-    text-align: center; 
-    font-size: 0.75rem; 
-    color: #888; 
-    margin-top: 2rem; 
-    padding-top: 1rem; 
-    border-top: 1px solid rgba(128,128,128,0.2); 
-}
-
-/* Karanlık Modda Mesajların Okunabilirliği İçin */
-[data-testid="stChatMessage"] {
-    background-color: transparent !important;
-}
+.footer { text-align: center; font-size: 0.75rem; color: #888; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(128,128,128,0.2); }
 </style>
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
-#  Q&A DATABASE (Tam, 19 Soruluk Veritabanı)
+#  Q&A DATABASE
 # ══════════════════════════════════════════════════════════════
 QA_DATABASE = [
     {
@@ -120,7 +85,7 @@ QA_DATABASE = [
     },
     {
         "question": "What is the difference between IE 300 and IE 400? Compare IE 300 IE 400",
-        "answer": "**IE 300 vs IE 400:**\n\n| | IE 300 | IE 400 |\n|---|---|---|\n| Who | 3rd-year students | 4th-year students |\n| Prerequisite | IE 200 completed | IE 300 completed |\n| Focus | Basic engineering, observation | Advanced problems, system design |\n| Duration | Min. 20 working days | Min. 20 working days |\n\nIE 300 emphasises learning through observation and basic tasks.\nIE 400 expects you to contribute to engineering analysis, process improvement, or system design."
+        "answer": "**IE 300 vs IE 400:**\n\n| | IE 300 | IE 400 |\n|---|---|---|\n| Who | 3rd-year students | 4th-year students |\n| Prerequisite | IE 200 completed | IE 300 completed |\n| Focus | Basic engineering, observation | Advanced problems, system design |\n| Duration | Min. 20 working days | Min. 20 working days |\n\nIE 300 emphasises learning through observation and basic tasks. IE 400 expects you to contribute to engineering analysis, process improvement, or system design."
     },
     {
         "question": "Can I do my internship abroad? International internship foreign country outside Turkey",
@@ -169,68 +134,95 @@ QA_DATABASE = [
 ]
 
 # ══════════════════════════════════════════════════════════════
-#  YEREL ARAMA MOTORU
+#  VECTOR STORE
 # ══════════════════════════════════════════════════════════════
 @st.cache_resource(show_spinner="Loading knowledge base… (~30 seconds on first load)")
 def build_vector_store():
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-    docs = [Document(page_content=qa["question"] + " " + qa["answer"], metadata={"answer": qa["answer"], "idx": i}) for i, qa in enumerate(QA_DATABASE)]
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    )
+    docs = [
+        Document(
+            page_content=qa["question"] + " " + qa["answer"],
+            metadata={"answer": qa["answer"], "idx": i}
+        )
+        for i, qa in enumerate(QA_DATABASE)
+    ]
     return FAISS.from_documents(docs, embeddings)
 
 # ══════════════════════════════════════════════════════════════
-#  KİMLİĞİ GİZLENMİŞ, BARAJI KALDIRILMIŞ MELEZ BEYİN (KOTA KORUMALI)
+#  MODEL SEÇİMİ — EN İYİ ÜCRETSİZ MODELİ OTOMATİK BULUR
+# ══════════════════════════════════════════════════════════════
+@st.cache_resource(show_spinner=False)
+def get_best_model_name() -> str:
+    """
+    API'de mevcut modelleri listeler ve en iyi ücretsiz modeli seçer.
+    Öncelik sırası: gemini-2.0-flash > gemini-1.5-flash > diğerleri
+    """
+    try:
+        available = [
+            m.name for m in genai.list_models()
+            if "generateContent" in m.supported_generation_methods
+            and "vision" not in m.name
+            and "embedding" not in m.name
+        ]
+
+        # Öncelik sırasına göre ara
+        priority = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
+        for preferred in priority:
+            for m in available:
+                if preferred in m:
+                    return m.replace("models/", "")
+
+        # Hiçbiri yoksa ilk geçerli modeli döndür
+        if available:
+            return available[0].replace("models/", "")
+
+    except Exception:
+        pass
+
+    return "gemini-2.0-flash"  # son çare default
+
+# ══════════════════════════════════════════════════════════════
+#  CEVAP ÜRETİCİ
 # ══════════════════════════════════════════════════════════════
 def ask_gemini(user_question: str) -> str:
     vector_store = build_vector_store()
-    
-    # En iyi 3 eşleşmeyi koşulsuz şartsız çekiyoruz.
     results = vector_store.similarity_search(user_question, k=3)
     context = "\n\n---\n\n".join([doc.metadata["answer"] for doc in results])
 
+    model_name = get_best_model_name()
+
     try:
-        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        
-        if not available_models:
-            return "⚠️ HATA: API Key yetkisiz veya modellere erişilemiyor."
-            
-        # 2.0 ve 2.5 yasaklayan filtre
-        safe_models = [m for m in available_models if "2.0" not in m and "2.5" not in m and "vision" not in m]
-        
-        if not safe_models:
-            return "⚠️ HATA: Geçerli bedava model bulunamadı."
-            
-        chosen_model = safe_models[0]
-        for m in safe_models:
-            if "1.5-flash" in m:
-                chosen_model = m
-                break
-                
-        clean_model_name = chosen_model.replace("models/", "")
-        model = genai.GenerativeModel(clean_model_name)
-        
+        model = genai.GenerativeModel(model_name)
     except Exception as e:
-        return f"API bağlantı hatası: {e}"
-    
+        return f"⚠️ Could not load model `{model_name}`: {e}"
+
     prompt = f"""You are the official 'METU IE Summer Practice Assistant'.
-    
-    CRITICAL IDENTITY RULE: 
-    NEVER mention that you are an AI, a language model, Gemini, or developed by Google. Act like a helpful human-like assistant dedicated to METU IE students. If someone asks "who are you" or "are you an AI", purely introduce yourself as the METU IE Summer Practice Assistant.
-    
-    Here is the retrieved information from the official internship database:
-    {context}
-    
-    Task Guidelines:
-    1. INTERNSHIP QUESTIONS: If the user asks about METU IE Internships, answer accurately using ONLY the information provided in the context above.
-    2. OUT OF SCOPE QUESTIONS: If the user asks something completely unrelated to internships (e.g., math, coding, history, general chat), answer perfectly using your general knowledge, but ALWAYS STAY IN CHARACTER as the METU IE Assistant. Do not break character.
 
-    User Question: {user_question}
-    Answer:"""
+IDENTITY RULE:
+Never mention that you are an AI, Gemini, or made by Google.
+If asked who you are, introduce yourself only as the METU IE Summer Practice Assistant.
 
-    response = model.generate_content(prompt)
-    return response.text
+RETRIEVED INFORMATION FROM THE OFFICIAL DATABASE:
+{context}
+
+ANSWER RULES:
+1. For internship-related questions: answer using ONLY the retrieved information above.
+2. For completely unrelated questions (math, history, coding, etc.): you may use your general knowledge, but always stay in character as the METU IE Assistant.
+3. Never invent internship rules or deadlines that are not in the retrieved information.
+
+Student's question: {user_question}
+Answer:"""
+
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"⚠️ Model error (`{model_name}`): {e}"
 
 # ══════════════════════════════════════════════════════════════
-#  UI
+#  UI — HEADER
 # ══════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="main-header">
@@ -239,6 +231,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ══════════════════════════════════════════════════════════════
+#  UI — SIDEBAR
+# ══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("## 🎓 METU IE\nSummer Practice")
     st.markdown("---")
@@ -263,8 +258,20 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
+# ══════════════════════════════════════════════════════════════
+#  UI — CHAT
+# ══════════════════════════════════════════════════════════════
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello! 👋 I'm the **METU IE Summer Practice Assistant**.\n\nI can answer your questions about **IE 300** and **IE 400** internships, or we can chat about anything else you'd like! 🚀"}]
+    st.session_state.messages = [
+        {
+            "role": "assistant",
+            "content": (
+                "Hello! 👋 I'm the **METU IE Summer Practice Assistant**.\n\n"
+                "I can answer your questions about **IE 300** and **IE 400** internships, "
+                "or we can chat about anything else you'd like! 🚀"
+            )
+        }
+    ]
 
 prefill = st.session_state.pop("prefill", None)
 
@@ -272,7 +279,7 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-user_input = st.chat_input("Ask anything about METU IE Summer Practice or general topics…") or prefill
+user_input = st.chat_input("Ask anything about METU IE Summer Practice…") or prefill
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -280,13 +287,13 @@ if user_input:
         st.markdown(user_input)
 
     with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
+        with st.spinner("Thinking…"):
             try:
                 answer = ask_gemini(user_input)
                 st.markdown(answer)
             except Exception as e:
-                st.error(f"⚠️ Error: {e}")
-                answer = "An error occurred."
+                answer = f"⚠️ Error: {e}"
+                st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
 
@@ -298,17 +305,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ══════════════════════════════════════════════════════════════
-#  AUTO-SCROLL (AŞAĞI IŞINLANMA) HİLESİ
-# ══════════════════════════════════════════════════════════════
-components.html(
-    f"""
-    <script>
-        var chatHistory = window.parent.document.querySelector('.main');
-        if (chatHistory) {{
-            chatHistory.scrollTo({{ top: chatHistory.scrollHeight, behavior: 'smooth' }});
-        }}
-    </script>
-    """,
-    height=0
-)
+components.html("""
+<script>
+    var main = window.parent.document.querySelector('.main');
+    if (main) { main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' }); }
+</script>
+""", height=0)

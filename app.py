@@ -91,7 +91,7 @@ QA_DATABASE = [
     },
     {
         "question": "What are the requirements for IE 300? IE 300 requirements prerequisites conditions sector company",
-        "answer": "**IE 300 (Industrial Training I) requirements:**\n\n- You must have successfully completed **IE 200** before applying\n- Minimum duration: **20 working days (4 weeks)**\n- Must be done at a **manufacturing (production) company only** — service sector is NOT eligible\n- The company must have a supervising engineer on staff\n- You must get departmental approval before starting\n- Focus is on production processes and hands-on manufacturing experience"
+        "answer": "**IE 300 (Industrial Training I) requirements:**\n\n- Minimum duration: **20 working days (4 weeks)**\n- Must be done at a **manufacturing (production) company only** — service sector is NOT eligible\n- The company must have a supervising engineer on staff\n- You must get departmental approval before starting\n- Focus is on production processes and hands-on manufacturing experience"
     },
     {
         "question": "What are the requirements for IE 400? IE 400 requirements prerequisites conditions sector company",
@@ -119,7 +119,7 @@ QA_DATABASE = [
     },
     {
         "question": "What is the difference between IE 300 and IE 400? Compare IE 300 IE 400",
-        "answer": "**IE 300 vs IE 400:**\n\n| | IE 300 | IE 400 |\n|---|---|---|\n| Who | 3rd-year students | 4th-year students |\n| Prerequisite | IE 200 completed | IE 300 completed |\n| Eligible sector | **Manufacturing only** | Manufacturing + Service |\n| Focus | Production, observation | Advanced engineering, system design |\n| Duration | Min. 20 working days | Min. 20 working days |"
+        "answer": "**IE 300 vs IE 400:**\n\n| | IE 300 | IE 400 |\n|---|---|---|\n| Who | 3rd-year students | 4th-year students |\n| Prerequisite | None specified | IE 300 completed |\n| Eligible sector | **Manufacturing only** | Manufacturing + Service |\n| Focus | Production, observation | Advanced engineering, system design |\n| Duration | Min. 20 working days | Min. 20 working days |"
     },
     {
         "question": "Can I do my internship abroad? International internship foreign country outside Turkey",
@@ -162,7 +162,15 @@ QA_DATABASE = [
         "answer": "**Official sources:**\n\n- 🌐 Website: **https://sp-ie.metu.edu.tr/en**\n- 🏢 IE Department secretary's office (in person)\n\nAll internship forms, announcements, guidelines, and deadlines are published there."
     },
     {
-        "question": "How can I find a summer practice? How to find a company for internship? Find internship place",
+        "question": "Where can I do IE 300? Where to do IE 300 internship location company type place",
+        "answer": "**IE 300 must be done at a manufacturing (production) company.**\n\n- Only manufacturing/production sector companies are eligible\n- Service sector companies (banks, hospitals, IT, logistics, consulting) are NOT eligible for IE 300\n- The company must have a supervising engineer on staff\n- Both domestic (Turkey) and international manufacturing companies are accepted\n- Once you find a company, apply through sp-ie.metu.edu.tr"
+    },
+    {
+        "question": "Where can I do IE 400? Where to do IE 400 internship location company type place",
+        "answer": "**IE 400 can be done at both manufacturing and service sector companies.**\n\n- Manufacturing companies (factories, production plants)\n- Service sector: banks, hospitals, logistics, IT, consulting, construction\n- The company must have a supervising engineer on staff\n- Both domestic and international companies are accepted\n- Once you find a company, apply through sp-ie.metu.edu.tr"
+    },
+    {
+        "question": "How can I find a summer practice company? Find internship place METU career",
         "answer": "**How to find a company for your summer practice:**\n\n- Start searching **early** — at least 2-3 months before the internship period\n- **IE 300:** manufacturing/production companies only\n- **IE 400:** manufacturing or service sector — both are fine\n- Check METU career fairs, LinkedIn, company websites, and your personal network\n- Once a company agrees, get their **Acceptance Letter** and apply through sp-ie.metu.edu.tr"
     }
 ]
@@ -222,12 +230,12 @@ def ask_gemini(user_question: str) -> str:
 You have access to the official internship database below (CONTEXT). Use it as your primary source.
 
 RULES:
-1. Read the CONTEXT carefully. Your answer MUST agree with what the context says — never contradict it.
-2. Start your answer by directly stating what the context says (yes/no/how), then explain.
-3. Do NOT add your own opinion or knowledge that contradicts the context.
-4. If the answer is genuinely not in the context, say so briefly and suggest sp-ie.metu.edu.tr.
+1. Read the CONTEXT carefully and answer based on exactly what it says. Do not contradict it.
+2. Do NOT add any information that is not in the CONTEXT — especially do not mention IE 200 or any course prerequisites not stated there.
+3. Answer the actual question being asked. Do not reframe it as a yes/no if it is not.
+4. If the answer is not in the CONTEXT, say: "Please check sp-ie.metu.edu.tr or contact the IE Department secretary for this."
 5. Never say you are an AI, Gemini, or made by Google.
-6. Be concise and clear. Use bullet points when listing items.
+6. Be concise and clear.
 
 CONTEXT FROM OFFICIAL DATABASE:
 {context}
